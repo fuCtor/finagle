@@ -80,9 +80,9 @@ object Cors {
      * n.b. The string "*" cannot be used for a resource that supports credentials.
      */
     private[this] def setOriginAndCredentials(response: Response, origin: String): Response = {
-      response.headerMap.add("Access-Control-Allow-Origin", origin)
+      response.headerMap.set("Access-Control-Allow-Origin", origin)
       if (policy.supportsCredentials && origin != "*") {
-        response.headerMap.addUnsafe("Access-Control-Allow-Credentials", "true")
+        response.headerMap.setUnsafe("Access-Control-Allow-Credentials", "true")
       }
       response
     }

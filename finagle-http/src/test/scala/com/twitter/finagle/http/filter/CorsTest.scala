@@ -40,6 +40,10 @@ class CorsTest extends AnyFunSuite {
       case None => fail(s"$name not found")
     }
 
+  private[this] def assertMultipleHeader(response: Response, name: String): Unit =
+    if(response.headerMap.getAll(name).length > 1)
+      fail(s"Response has multiple headers ${name}")
+
   private[this] def assertHeaderMissing(response: Response, name: String): Unit =
     assert(response.headerMap.get(name).isEmpty)
 
@@ -108,6 +112,20 @@ class CorsTest extends AnyFunSuite {
     assertHeaderMissing(response, "Access-Control-Allow-Credentials")
     assertHeaderMissing(response, "Access-Control-Expose-Headers")
     assertHeader(response, "Vary", "Origin")
+    assert(response.contentString == "#guwop")
+  }
+
+  test(
+    "Http.CorsFilter replace response headers if it already exists") {
+    val service = corsFilter.andThen(corsFilter).andThen(underlying)
+    val request = Request()
+    request.method = TRAP
+    request.headerMap.set("Origin", "juughaus")
+
+    val response = Await.result(service(request), 1.second)
+    assertMultipleHeader(response, "Access-Control-Allow-Origin")
+    assertMultipleHeader(response, "Access-Control-Allow-Credentials")
+    assertMultipleHeader(response, "Access-Control-Expose-Headers")
     assert(response.contentString == "#guwop")
   }
 }
